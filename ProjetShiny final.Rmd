@@ -1,0 +1,207 @@
+---
+title: "Top 10 highest paid athletes in in the world in 2020-2021"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+Authors: 
+#Albertyny BADIO (BA175706),
+#Guy Gérard JEAN (JE172347),
+#Jessica GUILLAUME (GU175636),
+#Sadrac JEAN-LOUIS (JE170820)
+---
+
+```{r setup, include=FALSE, NULL=FALSE}
+library(flexdashboard)
+library(readxl)
+library(shiny)
+library(tidyverse)
+library(dplyr)
+library(plotly)
+library(ANOVAShiny)
+library(ANOVAShiny2)
+library(dummies)
+library(dummy)
+library(data.table)
+library(ggplot2)
+```
+
+Introduction
+==============
+
+We are working with the data about the incomes of the 10 highest paid athletes in the world in 2020-2021. We will analyze the effect of certain qualitative variables such as age range, sports practiced, and where they're from. Those athletes are Conor McGregor,Lionel Messi, Cristiano Ronaldo, Dak Prescott, LeBron James, Neymar, Roger Federer, Lewis Hamilton, Tom Brady, Kevin Durant and are from from America and Europe. We have 6 kind of sports and four age ranges represent by those richest players.
+
+The results will be shown in graphics, statistics and regression analysis. We will study the relationship between the income(in millions $US) and those qualitative variables.
+
+Here are the data collected on the 10 highest paid athletes in the world in 2020-2021 on which we're going to make some analysises and show how the qualitative variables interact with one another and when taken separately on the incomes.
+
+```{r}
+# Highest paid athletes in the world in 2020-2021
+Athletes<-c("Conor McGregor","Lionel Messi","Cristiano Ronaldo","Dak Prescott","LeBron James","Neymar","Roger Federer","Lewis Hamilton","Tom Brady","Kevin Durant") 
+
+# Sports practiced by the 10 highest paid athletes in the world in 2020-2021
+Sports<-c("Martial Arts","Soccer","Soccer","Football",
+                "Basket-ball","Soccer","Tennis","Car race","Football","Basket-ball") 
+
+# Incomes of the 10 highest paid athletes in the world in 2020-2021 in millions $US
+Incomes<-c(180,130,120,107.5,96.5,95,90, 82, 76, 70) 
+Incomes
+
+# Origin of the 10 highest paid athletes in 2020-2021
+Origins<-c("Europe","America","Europe","America","America","America","Europe","Europe","America","America") 
+
+# Top ten highest paid athletes ages
+Ages<-c(32,33,36,27,36,29,39,36,43,42)
+
+# Age gap of the athletes in 2020-2021
+Range1<-c("[25,30[","[30,35[","[35,40[","[40,45[")
+
+# Age range of the athletes in 2020-2021
+Range2<-c("Level1","Level2","Level3","Level4")
+
+# Data
+df<-data.frame(Athletes,Sports,Incomes,Origins,Ages)
+df
+```
+-------------------------------------------------------------
+Plots
+====================
+## Column {data-width="150"}
+          Graph 1:The athletes and their income scale
+```{r}
+plot_ly(df, x=~Athletes, y=~Incomes, color = I("red"))
+```
+-------------------
+
+## Column {data-width="150"}
+        Graph 2:Comparison between the two continents
+```{r}
+plot_ly(df, x=~Origins, y=~Incomes, color=I("black"))
+```
+--------------------
+
+## Column {data-width="150"}
+        Graph 3:The sports which provide higher income
+```{r}
+plot_ly(df, x=~Sports, y=~Incomes, color=I("green"))
+```
+--------------------
+
+Regression Analysis
+====================
+## Column {data-width="350"}
+       Statistics and econometric outputs 1
+```{r}
+summary(lm(Incomes~Origins*Ages))
+```
+--------------------
+
+## Column {data-width="350"}
+       Statistics and econometric outputs 2
+```{r}
+summary(lm(Incomes~Ages))
+```
+---------------------
+
+## Column {data-width="350"}
+       Statistics and econometric outputs 3
+```{r}
+summary(lm(Incomes~Origins))
+```
+-----------------------
+
+Interpreting the regressioncoefficients :(Using an alpha level of α=.05)
+===========================================================
+ Statistics and econometric outputs 1: 
+
+We can say that all the coefficients are statiscally significant except for the coefficient of ages. 
+We notice that as the athletes from Europe grow older their income is lower by 11.141 millions $US compared to the athletes who are from America.
+
+ Statistics and econometric outputs 2: 
+
+We notice that only the intercept coefficient is statiscally significant. 
+We notice that as the athletes grow older their income decreases by 3.227 millions $US.
+
+ Statistics and econometric outputs 3: 
+
+We notice that only the intercept coefficient is statiscally significant. 
+We notice also that the income gap between athletes from Europe commpared those from America is about 22.17 millions $US.
+
+
+Interactive dashboard 1
+===============================================================
+  
+## Column{.sidebar}
+----------------------------------------------------------------
+
+Representation of variables by their number of athletes
+```{r}
+selectInput("Data", label ="Select one variable",
+            choices = c("Sports","Incomes","Origins"),
+            selected="Sports")
+```
+
+```{r}
+renderPlotly(plot_ly(df,x=~df[[input$"Data"]], color=I("Blue")))
+```
+
+Interactive dashboard 2
+===============================================================
+```{r}
+selectInput("Data2", label ="Select one variable",
+            choices = c("Ages","Incomes"),
+            selected="Ages")
+```
+
+```{r}
+renderPlotly(plot_ly(df, y="Ages",color=I("Yellow") ))
+```
+
+Different types of graphics about the incomes 
+===============================================================
+## Column {data-width="100"}
+      This chart represents the incomes scatter between each athlete
+```{r}
+Chart1<-stripchart(Incomes, col="purple")
+Chart1
+```
+----------------------------------------------------------------
+
+## Column {data-width="100"}
+      This chart represents the athletes with upper and lower incomes
+```{r}
+Chart2<-boxplot(Incomes~Athletes)
+Chart2
+```
+---------------------------------------------------------------
+
+## Column {data-width="100"}
+        This chart represents the incomes distribution to each player
+```{r}
+Chart3<-plot(Incomes,type="b",xlab="Athletes", col="blue")
+Chart3
+```
+
+Graphics about the Origins and Sports practiced by the athletes
+===============================================================
+## Column {data-width="100"}
+          This chart represents the part of each athlete by continent
+```{r, NULL=FALSE }
+Chart4<-pie(table(Origins))
+Chart4
+```
+----------------------------------------------------------------
+
+## Column {data-width="100"}
+          This chart represents the part of each athlete by sports
+```{r}
+Chart5<-pie(table(Sports))
+Chart5
+```
+
+Conclusion
+================================================================
+It is clear that qualitative variables such as Origins, Sports, and quantitative variable such as ages can affect the income of the athletes in one way or another.
+We analyzed statistically the 10 highest paid athletes in the world and verify how their income varies with age and also by the kind of sports they practice.
+We notice that most of those athletes (60%) are from America and most of them (30%) play soccer and it provides higher income generally compared to the other sports generally .
